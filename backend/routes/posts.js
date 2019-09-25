@@ -47,22 +47,39 @@ router.post("", multer({storage: storage}).single("image") ,(req,res,next)=>{
 });
 
 router.get('',(req, res, next)=>{
-  Post.find().then(documents => {
+  const pageSize = +req.query.pageSize;
+  const currentPage = +req.query.page;
+  const postQuerry = Post.find();
+  let fetchedPosts;
+  if( pageSize && currentPage ) {
+    postQuerry.skip(pageSize * (currentPage - 1)).limit(pageSize);
+  }
+  postQuerry.find().then(documents => {
+    fetchedPosts = documents;
+    return Post.count();
+  } ).then(count => {
     res.status(200).json({
       message:'Posts fetched successfully!',
-      posts: documents
+      posts: fetchedPosts,
+      macPosts: count
     });
-  } );
+  });
 });
 
 router.put("/:id",  multer({storage: storage}).single("image") ,(req, res, next)=>{
+  let imagePath = req.body.imagePath;
+  if(req.file){
+    const url = req.protocol + '://' + req.get("host");
+    imagePath = url + "/images/" + req.file.filename;
+  }
   const post = new Post({
     _id: req.body.id,
     title: req.body.title,
-    content: req.body.content
+    content: req.body.content,
+    imagePath: imagePath
   });
+  console.log(post);
   Post.updateOne({_id: req.params.id},post).then(result => {
-
     res.status(200).json({
       message:'Edit successfull!'
     });
