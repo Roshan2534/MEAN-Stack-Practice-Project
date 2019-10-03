@@ -12,15 +12,16 @@ export class SignupComponent implements OnInit {
 
   isLoading = false;
 
-  constructor(public authService : AuthService) { }
+  constructor(public authService: AuthService) { }
 
   ngOnInit() {
   }
 
   onSignup(form: NgForm) {
-    if(form.invalid){
+    if (form.invalid) {
       return;
     }
+    this.isLoading = true;
     this.authService.createuser(form.value.email, form.value.password);
   }
 
